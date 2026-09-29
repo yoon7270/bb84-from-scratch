@@ -94,6 +94,6 @@ for i in range(len(alice_key)):
 
 
 
-QBER = error_count / len(alice_bits)
+QBER = error_count / len(alice_keys)
 
 print(QBER)
