@@ -44,56 +44,77 @@ qubit = prepare_qubit(0, 1)  # |+>
 prob_0 = qubit[0] ** 2
 prob_1 = qubit[1] ** 2
 
-N = 10
 
-alice_bits = []
-alice_basis = []
-bob_basis = []
-bob_result = []
+def run_bb84(N):
+    alice_qubits = []
+    alice_bits = []
+    alice_basis = []
+    alice_key = []
 
-for _ in range(N):
-    alice_bits.append(random.randint(0, 1))
-    alice_basis.append(random.randint(0, 1))
-    bob_basis.append(random.randint(0, 1))
+    bob_basis = []
+    bob_result = []
+    bob_key = []
 
-alice_qubits = []
+    eve_qubits = []
+    eve_basis = []
+    eve_results = []
+    eve_qubits = []
 
-for i in range(N):
-    # alice_bits[i]
-    # alice_basis[i]
-    # prepare_qubit() 사용
-    alice_qubits.append(prepare_qubit(alice_bits[i], alice_basis[i]))
+    error_count = 0
 
-for i in range(N):
-    # alice_bits[i]
-    # alice_basis[i]
-    # prepare_qubit() 사용
-    bob_result.append(measure_qubit(alice_qubits[i], bob_basis[i]))
+    for _ in range(N):
+        alice_bits.append(random.randint(0, 1))
+        alice_basis.append(random.randint(0, 1))
+        bob_basis.append(random.randint(0, 1))
+        eve_basis.append(random.randint(0, 1))
 
-for i in range(N):
-    print(
-        "alice bit:", alice_bits[i],
-        "alice basis:", alice_basis[i],
-        "qubit:", alice_qubits[i],
-        "bob basis:", bob_basis[i],
-        "bob result:", bob_result[i]
-    )
+    for i in range(N):
+        # alice_bits[i]
+        # alice_basis[i]
+        # prepare_qubit() 사용
+        alice_qubits.append(prepare_qubit(alice_bits[i], alice_basis[i]))
 
-alice_key = []
-bob_key = []
-error_count = 0
+    for i in range(N):
+        # alice_qubits[i]
+        # eve_basis[i]
+        # measure_qubit() 사용
+        eve_results.append(measure_qubit(alice_qubits[i], eve_basis[i]))
 
-for i in range(N):
-    if alice_basis[i] == bob_basis[i]:
-        alice_key.append(alice_bits[i])
-        bob_key.append(bob_result[i])
+    for i in range(N):
+        # eve_results[i]
+        # eve_basis[i]
+        # prepare_qubit() 사용
+        eve_qubits.append(prepare_qubit(eve_results[i], eve_basis[i]))
 
-for i in range(len(alice_key)):
-    if alice_key[i] != bob_key[i]:
-        error_count += 1
+    for i in range(N):
+        bob_result.append(measure_qubit(eve_qubits[i], bob_basis[i]))
 
 
+    for i in range(N):
+        if alice_basis[i] == bob_basis[i]:
+            alice_key.append(alice_bits[i])
+            bob_key.append(bob_result[i])
 
-QBER = error_count / len(alice_keys)
+    for i in range(len(alice_key)):
+        if alice_key[i] != bob_key[i]:
+            error_count += 1
 
-print(QBER)
+    QBER = error_count / len(alice_key)
+    return QBER
+
+qbers = []
+
+for _ in range(100):
+    qbers.append(run_bb84(1000))
+
+average_qber = sum(qbers) / len(qbers)
+
+print("Average QBER:", average_qber)
+print("Average QBER %:", average_qber * 100)
+
+# print("Alice bits :", alice_bits)
+# print("Alice basis:", alice_basis)
+# print("Eve basis  :", eve_basis)
+# print("Eve result :", eve_results)
+# print("Bob basis  :", bob_basis)
+# print("Bob result :", bob_result)
